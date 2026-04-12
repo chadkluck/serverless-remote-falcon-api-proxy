@@ -154,8 +154,8 @@ class Config extends AppConfig {
 		return Promise.all([
 			CacheableDataAccess.prime(),
 			CachedParameterSecrets.prime(),
-			remoteFalconAccessToken.prime(),
-			remoteFalconSecretKey.prime(),
+			// remoteFalconAccessToken.prime(),
+			// remoteFalconSecretKey.prime(),
 		]);
 	};
 };
