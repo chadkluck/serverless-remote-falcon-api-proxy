@@ -133,11 +133,7 @@ const process = async function (event, context) {
 		} else {
 			// Unknown endpoint
 			const timestamp = new Date().toISOString();
-			console.warn("Unknown endpoint requested:", JSON.stringify({
-				path,
-				method,
-				requestId
-			}));
+			DebugAndLog.warn("Unknown endpoint requested", { path, method, requestId });
 
 			RESP.setStatusCode(404);
 			RESP.setBody(ProxyView.notFoundView(requestId, timestamp));
@@ -145,7 +141,7 @@ const process = async function (event, context) {
 			const totalTime = Date.now() - startTime;
 
 			// Log REQUEST_METRICS for 404
-			console.log("REQUEST_METRICS:", JSON.stringify({
+			DebugAndLog.log("Request metrics", "REQUEST_METRICS", {
 				requestId,
 				timestamp: new Date().toISOString(),
 				method,
@@ -154,7 +150,7 @@ const process = async function (event, context) {
 				processingTime: 0,
 				totalTime,
 				success: false
-			}));
+			});
 
 			return RESP;
 		}
@@ -176,7 +172,7 @@ const process = async function (event, context) {
 		}
 
 		// Log REQUEST_METRICS (matching old-backend format)
-		console.log("REQUEST_METRICS:", JSON.stringify({
+		DebugAndLog.log("Request metrics", "REQUEST_METRICS", {
 			requestId,
 			timestamp: new Date().toISOString(),
 			method,
@@ -185,7 +181,7 @@ const process = async function (event, context) {
 			processingTime,
 			totalTime,
 			success: result.statusCode < 400
-		}));
+		});
 
 		DebugAndLog.debug("Response from Routes:", RESP.toObject());
 
@@ -195,7 +191,7 @@ const process = async function (event, context) {
 		const totalTime = Date.now() - startTime;
 
 		// Log LAMBDA_ERROR (matching old-backend format)
-		console.error("LAMBDA_ERROR:", JSON.stringify({
+		DebugAndLog.error("LAMBDA_ERROR: Unhandled error during request processing", {
 			requestId,
 			timestamp: new Date().toISOString(),
 			error: {
@@ -210,10 +206,10 @@ const process = async function (event, context) {
 				userAgent: event.headers?.["user-agent"]
 			},
 			totalTime
-		}));
+		});
 
 		// Log REQUEST_METRICS for error
-		console.log("REQUEST_METRICS:", JSON.stringify({
+		DebugAndLog.log("Request metrics", "REQUEST_METRICS", {
 			requestId,
 			timestamp: new Date().toISOString(),
 			method,
@@ -223,7 +219,7 @@ const process = async function (event, context) {
 			success: false,
 			errorType: error.name,
 			errorMessage: error.message
-		}));
+		});
 
 		RESP.setStatusCode(500);
 		RESP.setBody({

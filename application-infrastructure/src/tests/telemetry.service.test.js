@@ -43,17 +43,18 @@ describe('Telemetry Service', () => {
 			consoleSpy.mockRestore();
 		});
 
-		it('should log TELEMETRY_EVENT and TELEMETRY_METRICS entries', async () => {
-			const consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+		it('should log TELEMETRY_EVENT and TELEMETRY_METRICS entries via DebugAndLog', async () => {
+			const { tools: { DebugAndLog } } = require('@63klabs/cache-data');
+			const logSpy = jest.spyOn(DebugAndLog, 'log').mockImplementation(() => {});
 			const body = { eventType: 'click', url: 'https://example.com/page' };
 			const clientInfo = { ipAddress: '10.0.0.1', userAgent: 'TestAgent', host: 'example.com' };
 
 			await processTracking(body, clientInfo, 'req-456');
 
-			const calls = consoleSpy.mock.calls.map(c => c[0]);
-			expect(calls.some(c => c.startsWith('TELEMETRY_EVENT:'))).toBe(true);
-			expect(calls.some(c => c.startsWith('TELEMETRY_METRICS:'))).toBe(true);
-			consoleSpy.mockRestore();
+			const calls = logSpy.mock.calls;
+			expect(calls.some(c => c[1] === 'TELEMETRY_EVENT')).toBe(true);
+			expect(calls.some(c => c[1] === 'TELEMETRY_METRICS')).toBe(true);
+			logSpy.mockRestore();
 		});
 
 		it('should return 400 VALIDATION_ERROR for invalid data', async () => {

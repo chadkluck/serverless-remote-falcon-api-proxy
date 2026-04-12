@@ -1,4 +1,5 @@
 const RemoteFalconLogBuilder = require("../utils/RemoteFalconLogBuilder");
+const { tools: { DebugAndLog } } = require("@63klabs/cache-data");
 
 /**
  * Remote Falcon API Data Access Object.
@@ -108,7 +109,7 @@ async function forward(url, method, body, jwt, clientInfo, requestId) {
 			const httpError = new Error(`HTTP ${response.status}: ${response.statusText || "Error"}`);
 			httpError.name = "HTTPError";
 			const errorLog = logBuilder.buildErrorLog(httpError, response.status);
-			console.log(`REMOTE_FALCON_ERROR: ${JSON.stringify(errorLog)}`);
+			DebugAndLog.error(`REMOTE_FALCON_ERROR: ${JSON.stringify(errorLog)}`, errorLog);
 		} else {
 			// Check for application-level errors in successful HTTP responses (2xx)
 			const applicationError = RemoteFalconLogBuilder.detectApplicationError(responseData);
@@ -118,10 +119,10 @@ async function forward(url, method, body, jwt, clientInfo, requestId) {
 					new Error(applicationError.message),
 					response.status
 				);
-				console.log(`REMOTE_FALCON_ERROR: ${JSON.stringify(errorLog)}`);
+				DebugAndLog.error(`REMOTE_FALCON_ERROR: ${JSON.stringify(errorLog)}`, errorLog);
 			} else {
 				const successLog = logBuilder.buildSuccessLog(response, responseData);
-				console.log(`REMOTE_FALCON_REQUEST: ${JSON.stringify(successLog)}`);
+				DebugAndLog.log("Remote Falcon request succeeded", "REMOTE_FALCON_REQUEST", successLog);
 			}
 		}
 
@@ -134,9 +135,8 @@ async function forward(url, method, body, jwt, clientInfo, requestId) {
 		};
 	} catch (error) {
 		const errorLog = logBuilder.buildErrorLog(error);
-		console.log(`REMOTE_FALCON_ERROR: ${JSON.stringify(errorLog)}`);
+		DebugAndLog.error(`REMOTE_FALCON_ERROR: ${JSON.stringify(errorLog)}`, errorLog);
 
-		console.error("Failed to forward request to Remote Falcon:", error);
 		throw new Error("Failed to communicate with Remote Falcon API");
 	}
 }

@@ -47,10 +47,11 @@ const defaultClientInfo = {
 
 describe('Feature: convert-to-atlantis, Property 3: Valid telemetry produces correct log and response', () => {
 
-	let consoleSpy;
+	let debugAndLogSpy;
 
 	beforeEach(() => {
-		consoleSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+		const { tools: { DebugAndLog } } = require('@63klabs/cache-data');
+		debugAndLogSpy = jest.spyOn(DebugAndLog, 'log').mockImplementation(() => {});
 	});
 
 	afterEach(() => {
@@ -62,7 +63,7 @@ describe('Feature: convert-to-atlantis, Property 3: Valid telemetry produces cor
 			fc.asyncProperty(
 				validSimpleTrackingArb,
 				async (trackingData) => {
-					consoleSpy.mockClear();
+					debugAndLogSpy.mockClear();
 
 					const result = await processTracking(trackingData, defaultClientInfo, 'req-123');
 
@@ -78,15 +79,14 @@ describe('Feature: convert-to-atlantis, Property 3: Valid telemetry produces cor
 					expect(typeof result.body.processingTime).toBe('number');
 					expect(result.body.processingTime).toBeGreaterThanOrEqual(0);
 
-					// Verify TELEMETRY_EVENT log was emitted
-					const telemetryLogCalls = consoleSpy.mock.calls.filter(
-						call => typeof call[0] === 'string' && call[0].includes('TELEMETRY_EVENT')
+					// Verify TELEMETRY_EVENT log was emitted via DebugAndLog.log
+					const telemetryLogCalls = debugAndLogSpy.mock.calls.filter(
+						call => call[1] === 'TELEMETRY_EVENT'
 					);
 					expect(telemetryLogCalls.length).toBeGreaterThanOrEqual(1);
 
-					// Parse the log entry and verify required fields
-					const logStr = telemetryLogCalls[0][1];
-					const logEntry = JSON.parse(logStr);
+					// Verify the structured log entry fields
+					const logEntry = telemetryLogCalls[0][2];
 					expect(logEntry).toHaveProperty('timestamp');
 					expect(logEntry).toHaveProperty('eventType', trackingData.eventType);
 					expect(logEntry).toHaveProperty('ipAddress', defaultClientInfo.ipAddress);

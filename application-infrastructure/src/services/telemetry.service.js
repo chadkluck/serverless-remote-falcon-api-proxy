@@ -15,6 +15,8 @@
  * );
  */
 
+const { tools: { DebugAndLog } } = require("@63klabs/cache-data");
+
 /**
  * Valid event types for tracking data.
  * 
@@ -371,15 +373,15 @@ async function processTracking(body, clientInfo, requestId) {
 		requestId: requestId
 	};
 
-	console.log('TELEMETRY_EVENT:', JSON.stringify(logEntry));
+	DebugAndLog.log("Telemetry event received", "TELEMETRY_EVENT", logEntry);
 
-	console.log('TELEMETRY_METRICS:', JSON.stringify({
+	DebugAndLog.log("Telemetry metrics", "TELEMETRY_METRICS", {
 		timestamp: timestamp,
 		eventType: body.eventType,
 		processingTime: processingTime,
 		success: true,
 		requestId: requestId
-	}));
+	});
 
 	return {
 		statusCode: 200,

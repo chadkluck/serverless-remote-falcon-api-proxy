@@ -35,6 +35,7 @@ jest.mock('@63klabs/cache-data', () => ({
 		DebugAndLog: {
 			debug: jest.fn(),
 			log: jest.fn(),
+			warn: jest.fn(),
 			error: jest.fn()
 		},
 		ClientRequest: jest.fn().mockImplementation(() => mockREQ),
