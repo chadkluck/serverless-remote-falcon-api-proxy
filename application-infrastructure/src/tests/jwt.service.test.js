@@ -7,7 +7,7 @@
  * Requirements: 2.3, 2.4, 2.5, 2.6, 16.4
  */
 
-const { jwtVerify } = require('jose');
+const { jwtVerify, SignJWT } = require('jose');
 
 const mockGetValue = jest.fn();
 const mockSecretGetValue = jest.fn();
@@ -23,13 +23,18 @@ jest.mock('../config', () => ({
 	}
 }));
 
-const { getToken, getCredentials, generateJWT, _resetCache } = require('../services/jwt.service');
+const { getToken, getCredentials, generateJWT, _resetCache, _setSignJWT } = require('../services/jwt.service');
 
 describe('JWT Service', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks();
 		_resetCache();
+		_setSignJWT(SignJWT); // Inject babel-transformed SignJWT to avoid dynamic import
+	});
+
+	afterAll(() => {
+		_setSignJWT(null); // Clean up
 	});
 
 	describe('generateJWT', () => {

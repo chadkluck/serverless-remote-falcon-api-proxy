@@ -15,6 +15,9 @@ const { Config } = require('../config');
 /** @type {Promise<typeof import('jose')>|null} */
 let _josePromise = null;
 
+/** @type {Function|null} */
+let _signJWTOverride = null;
+
 /**
  * Lazily load the jose ESM module via dynamic import.
  * Cached after first call so the import only happens once.
@@ -27,6 +30,17 @@ function _getJose() {
 		_josePromise = import('jose');
 	}
 	return _josePromise;
+}
+
+/**
+ * Override the SignJWT constructor for testing.
+ * Pass null to restore dynamic import behavior.
+ *
+ * @param {Function|null} SignJWT - The SignJWT class to use, or null to reset
+ * @private
+ */
+function _setSignJWT(SignJWT) {
+	_signJWTOverride = SignJWT;
 }
 
 /** @type {{ token: string|null, expiresAt: number|null }} */
@@ -104,7 +118,13 @@ async function getCredentials() {
  * const jwt = await generateJWT('my-access-token', 'my-secret-key');
  */
 async function generateJWT(accessToken, secretKey) {
-	const { SignJWT } = await _getJose();
+	let SignJWT;
+	if (_signJWTOverride) {
+		SignJWT = _signJWTOverride;
+	} else {
+		const jose = await _getJose();
+		SignJWT = jose.SignJWT;
+	}
 
 	const payload = { accessToken: accessToken };
 	const expirationTime = Math.floor(Date.now() / 1000) + (60 * 60); // 1 hour
@@ -132,5 +152,6 @@ module.exports = {
 	getToken,
 	getCredentials,
 	generateJWT,
-	_resetCache
+	_resetCache,
+	_setSignJWT
 };

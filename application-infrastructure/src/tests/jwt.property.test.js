@@ -9,12 +9,20 @@
  * accessToken in the payload, and expires in approximately 1 hour.
  */
 
-const { describe, it, expect } = require('@jest/globals');
+const { describe, it, expect, beforeAll, afterAll } = require('@jest/globals');
 const fc = require('fast-check');
-const { jwtVerify } = require('jose');
-const { generateJWT } = require('../services/jwt.service');
+const { jwtVerify, SignJWT } = require('jose');
+const { generateJWT, _setSignJWT } = require('../services/jwt.service');
 
 describe('Feature: convert-to-atlantis, Property 2: JWT token structure and signing', () => {
+
+	beforeAll(() => {
+		_setSignJWT(SignJWT); // Inject babel-transformed SignJWT to avoid dynamic import
+	});
+
+	afterAll(() => {
+		_setSignJWT(null);
+	});
 
 	it('should produce HS256-signed JWTs with correct payload and ~1 hour expiration for any access token and secret key', async () => {
 		await fc.assert(
