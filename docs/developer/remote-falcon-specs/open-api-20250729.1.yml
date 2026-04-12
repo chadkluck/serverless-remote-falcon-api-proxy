@@ -1,0 +1,327 @@
+openapi: 3.0.0
+info:
+  description: "API Spec for integration with Remote Falcon. Each request must contain a Bearer Token signed with the Secret Key provided. The payload for the signed token only needs to contain the Access Token that was also provided
+    (example: {\"accessToken\": \"abc123\"}). You can use https://jwt.io/ for inital testing of the token."
+  version: '20250729.1'
+  title: "Remote Falcon API"
+  contact:
+    email: "jvance@remotefalcon.com"
+  license:
+    name: "Apache 2.0"
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+    
+servers:
+  - url: 'https://remotefalcon.com/remote-falcon-external-api'
+  
+tags:
+  - name: Remote Falcon API
+  
+paths:
+  '/showDetails':
+    get:
+      tags:
+        - Remote Falcon API
+      operationId: "showDetails"
+      description: "Gets the preferences as set in the Remote Falcon Control Panel."
+      responses:
+        '200':
+          description: "Success"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/showDetails'
+        '400':
+          description: "Error"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unexpected Error"
+        '401':
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized"
+                    
+  '/addSequenceToQueue':
+    post:
+      tags:
+        - Remote Falcon API
+      operationId: "addSequenceToQueuev2"
+      description: "Adds a requested sequence to the Jukebox queue."
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/requestSequence'
+      responses:
+        '200':
+          description: "Success"
+        '202':
+          description: "Accepted"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "INVALID_LOCATION"
+                    description: >-
+                      Sequence was unable to be requested. Reason code is provided in the
+                      message field of the response body. Can be one of "QUEUE_FULL",
+                      "SONG_REQUESTED", or "INVALID_LOCATION"
+        '500':
+          description: "Error"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unexpected Error"
+        '401':
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized"
+                    
+  '/voteForSequence':
+    post:
+      tags:
+        - Remote Falcon API
+      operationId: "voteForSequencev2"
+      description: "Adds a single vote for a selected sequence"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/requestSequence'
+      responses:
+        '200':
+          description: "Success"
+        '202':
+          description: "Accepted"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "ALREADY_VOTED"
+                    description: >-
+                      Sequence was unable to be voted on. Reason code is provided in the
+                      message field of the response body. Can be one of "ALREADY_VOTED",
+                      or "INVALID_LOCATION"
+        '500':
+          description: "Error"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unexpected Error"
+        '401':
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized"
+  
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    showDetails:
+      properties:
+        preferences:
+          type: object
+          properties:
+            viewerControlEnabled:
+              type: boolean
+              example: true
+            viewerControlMode:
+              type: string
+              example: "jukebox"
+            resetVotes:
+              type: boolean
+              example: true
+            jukeboxDepth:
+              type: number
+              example: 5
+            locationCheckMethod:
+              type: string
+              example: "GEO"
+            showLatitude:
+              type: number
+              example: 30.0
+            showLongitude:
+              type: number
+              example: -90.0
+            allowedRadius:
+              type: number
+              example: 1.0
+            jukeboxRequestLimit:
+              type: number
+              example: 3
+            locationCode:
+              type: number
+              example: 1234
+            hideSequenceCount:
+              type: number
+              example: 2
+            makeItSnow:
+              type: boolean
+              example: true
+        sequences:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: "All I Want For Christmas"
+              displayName:
+                type: string
+                example: "Mariah Carey - All I Want For Christmas"
+              duration:
+                type: number
+                example: 160
+                description: >-
+                  Duration of the sequence in seconds.
+              visible:
+                type: boolean
+                example: true
+              index:
+                type: number
+                example: 1
+              order:
+                type: number
+                example: 1
+              active:
+                type: boolean
+                example: true
+              visibilityCount:
+                type: number
+                example: 0
+              type:
+                type: string
+                example: "SEQUENCE"
+              group:
+                type: string
+                example: "Intro and Song"
+              category:
+                type: string
+                example: "Traditional"
+              artist:
+                type: string
+                example: "Mariah Carey"
+        sequenceGroups:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: "All I Want For Christmas and Intro"
+              visibilityCount:
+                type: number
+                example: 0
+        requests:
+          type: array
+          items:
+            type: object
+            properties:
+              sequence:
+                type: object
+              position:
+                type: number
+                example: 0
+              viewerRequested:
+                type: string
+                example: 127.0.0.1
+              ownerRequested:
+                type: boolean
+                example: false
+        votes:
+          type: array
+          items:
+            type: object
+            properties:
+              sequence:
+                type: object
+              sequenceGroup:
+                type: object
+              votes:
+                type: number
+                example: 3
+              viewersVoted:
+                type: array
+                items:
+                  type: string
+                  example: 127.0.0.1
+              lastVoteTime:
+                type: string
+                example: "2024-11-15T08:22:53.298"
+              ownerVoted:
+                type: boolean
+                example: false
+        playingNow:
+          type: string
+          example: "Let It Go"
+        playingNext:
+          type: string
+          example: "Into the Unknown"
+        playingNextFromSchedule:
+          type: string
+          example: "Into the Unknown"
+            
+    requestSequence:
+      properties:
+        sequence:
+          type: string
+          example: "Little_Drummer_Boy"
+          description: >-
+            This is the sequence name being requested. Note that it should be
+            the sequence as it is in FPP or xSchedule and not how it appears to
+            the viewer.
+        viewerLatitude:
+          type: number
+          example: 40.123
+          description: >-
+            The current latitude of the viewer who is placing the request. Note,
+            this is only needed if location checks by GPS are enabled.
+        viewerLongitude:
+          type: number
+          example: -95.456
+          description: >-
+            The current longitude of the viewer who is placing the request.
+            Note, this is only needed if location checks by GPS are enabled.
+      required:
+        - sequence
+security:
+  - bearerAuth: []

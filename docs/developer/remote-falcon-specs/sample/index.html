@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Remote Falcon External API Example</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <style>
+        table {
+            width: 100%;
+        }
+
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+<h1>Remote Falcon External API Example</h1>
+<div>
+    <button type="button" id="getShowDetails">Get Show Details</button>
+</div>
+    <h2>Preferences:</h2>
+    <ul>
+        <li>Viewer Control Enabled: <span id="viewerControlEnabled"></span></li>
+        <li>Viewer Control Mode: <span id="viewerControlMode"></span></li>
+    </ul>
+    <h2>Playing Now: <span id="playingNow"></span></h2>
+    <h2>Playing Next: <span id="playingNext"></span></h2>
+</body>
+<script src="main.js"></script>
+</html>
