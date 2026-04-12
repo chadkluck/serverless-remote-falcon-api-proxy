@@ -10,8 +10,24 @@
  * @module services/jwt.service
  */
 
-const { SignJWT } = require('jose');
 const { Config } = require('../config');
+
+/** @type {Promise<typeof import('jose')>|null} */
+let _josePromise = null;
+
+/**
+ * Lazily load the jose ESM module via dynamic import.
+ * Cached after first call so the import only happens once.
+ *
+ * @returns {Promise<typeof import('jose')>}
+ * @private
+ */
+function _getJose() {
+	if (!_josePromise) {
+		_josePromise = import('jose');
+	}
+	return _josePromise;
+}
 
 /** @type {{ token: string|null, expiresAt: number|null }} */
 let jwtCache = {
@@ -88,6 +104,8 @@ async function getCredentials() {
  * const jwt = await generateJWT('my-access-token', 'my-secret-key');
  */
 async function generateJWT(accessToken, secretKey) {
+	const { SignJWT } = await _getJose();
+
 	const payload = { accessToken: accessToken };
 	const expirationTime = Math.floor(Date.now() / 1000) + (60 * 60); // 1 hour
 	const secret = new TextEncoder().encode(secretKey);

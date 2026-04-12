@@ -1,12 +1,12 @@
-# API Gateway with Lambda utilizing 63klabs/cache-data Written in Node.js
+# Serverless Remote Falcon API Proxy
 
-An application starter template to demonstrate Atlantis Template for AWS CodePipeline to provision a web service that utilizes API Gateway and an advanced Lambda function written in Node.js that implements various features of the [@63klabs/cache-data](https://www.npmjs.com/package/@63klabs/cache-data) NPM package.
+A web service that serves as a reverse-proxy for custom, self-hosted light show websites to access the Remote Falcon API allowing visitors to see song lists, current status, and make requests. Also includes metric and telemetry data of user interactions with the website. Utilizes API Gateway and an advanced Lambda function written in Node.js that implements various features of the [@63klabs/cache-data](https://www.npmjs.com/package/@63klabs/cache-data) NPM package. All built and deployed upon the [63Klabs Atlantis Template and Scripts Platform](https://github.com/63klabs/atlantis).
 
 | | Build/Deploy | Application Stack |
 |---|---|---|
 | **Languages** | Python, Shell | Node.js |
-| **Frameworks** | Atlantis, Jest | Atlantis, @63klabs/cache-data |
-| **Features** | SSM Parameters | API Gateway, Lambda, CloudWatch Logs, CloudWatch Alarms, CloudWatch Dashboard, X-Ray Tracing, Lambda Insights, Open API Spec, @63klabs/cache-data |
+| **Frameworks** | Atlantis, Jest | Atlantis, @63klabs/cache-data, jose |
+| **Features** | SSM Parameters | API Gateway, Lambda, CloudWatch Logs, CloudWatch Alarms, CloudWatch Dashboard, X-Ray Tracing, Lambda Insights, Open API Spec, @63klabs/cache-data, Remote Falcon API |
 
 > **Ready-to-Deploy-and-Run** with the [63Klabs Atlantis Templates and Scripts Platform for Serverless Deployments on AWS](https://github.com/63Klabs/atlantis)
 
@@ -22,12 +22,6 @@ An application starter template to demonstrate Atlantis Template for AWS CodePip
   - Caching of data from remote endpoints using S3 and DynamoDb (provision separately or with application)
   - Request handling: Router, Validation, response formatting and logging
 
-## Tutorial
-
-> Note: To keep this example VERY basic and simple, concepts such as routing, caching, and advanced monitoring are not used. For near production-ready examples, review the the other Atlantis starter applications.
-
-1. Read the [Atlantis Tutorials introductory page](https://github.com/63Klabs/atlantis-tutorials)
-2. Then perform the steps outlined in [Tutorial #2: API Gateway and Lambda using Cache-Data (Node)](https://github.com/63Klabs/atlantis-tutorials/blob/main/tutorials/02-advanced-api-gateway-lambda-cache-data-node/README.md).
 ## Architecture
 
 See [Architecture](./ARCHITECTURE.md)
