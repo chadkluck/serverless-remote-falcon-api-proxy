@@ -82,8 +82,8 @@ phases:
       # Generate a random 256 bit key (hexidecimal) in SSM for cache data:
       - python3 ./build-scripts/generate-put-ssm.py ${PARAM_STORE_HIERARCHY}CacheData_SecureDataKey --generate 256
       # Set Placeholders for RemoteFalcon access
-      - python3 ./build-scripts/update-ssm-parameters.py ${PARAM_STORE_HIERARCHY}RemoteFalcon/access-token
-      - python3 ./build-scripts/update-ssm-parameters.py ${PARAM_STORE_HIERARCHY}RemoteFalcon/secret-key
+      - python3 ./build-scripts/generate-put-ssm.py.py ${PARAM_STORE_HIERARCHY}RemoteFalcon/access-token
+      - python3 ./build-scripts/generate-put-ssm.py.py ${PARAM_STORE_HIERARCHY}RemoteFalcon/secret-key
 
   build:
     commands:
