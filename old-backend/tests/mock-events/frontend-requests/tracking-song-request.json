@@ -1,0 +1,39 @@
+{
+  "method": "POST",
+  "url": "/telemetry",
+  "headers": {
+    "Content-Type": "application/json",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Origin": "https://example.com",
+    "Referer": "https://example.com/home"
+  },
+  "body": {
+    "eventType": "songRequest",
+    "url": "https://example.com/home",
+    "timestamp": "2026-01-05T01:21:16.257Z",
+    "sessionId": "test-session-123",
+    "eventData": {
+      "songTitle": "Test Sequence 1",
+      "artist": "Light Show",
+      "requestStatus": "success",
+      "responseMessage": "Sequence added successfully",
+      "responseTime": 250,
+      "currentShow": "Christmas 2025",
+      "authenticated": true,
+      "queuePosition": 3,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "referrer": "",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      }
+    }
+  },
+  "metadata": {
+    "description": "Frontend song request tracking request",
+    "lastUpdated": "2026-01-05T01:21:16.247Z",
+    "component": "UserTracker",
+    "schemaVersion": "1.0",
+    "requestType": "tracking"
+  }
+}

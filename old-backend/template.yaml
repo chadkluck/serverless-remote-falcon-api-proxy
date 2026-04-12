@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 'Remote Falcon JWT Proxy - Serverless Application'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Environment name
+  
+  AllowedOrigins:
+    Type: String
+    Default: '*'
+    Description: Comma-delimited list of CORS allowed origins for the API (use * for development)
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 1024
+    Runtime: nodejs24.x
+    Environment:
+      Variables:
+        REMOTE_FALCON_ACCESS_TOKEN_PARAM: !Sub '/remotefalcon/${Environment}/access-token'
+        REMOTE_FALCON_SECRET_KEY_PARAM: !Sub '/remotefalcon/${Environment}/secret-key'
+        REMOTE_FALCON_API_BASE_URL: 'https://remotefalcon.com/remote-falcon-external-api'
+        ALLOWED_ORIGINS: !Ref AllowedOrigins
+
+Resources:
+  # Lambda Function
+  RemoteFalconProxyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub 'RemoteFalconProxy-${Environment}'
+      CodeUri: src/
+      Handler: index.handler
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+              Resource:
+                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/remotefalcon/${Environment}/access-token'
+                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/remotefalcon/${Environment}/secret-key'
+      Events:
+        # Telemetry endpoint
+        TelemetryPost:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RemoteFalconProxyApi
+            Path: /telemetry
+            Method: POST
+        TelemetryOptions:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RemoteFalconProxyApi
+            Path: /telemetry
+            Method: OPTIONS
+        # Proxy endpoints
+        ProxyAny:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RemoteFalconProxyApi
+            Path: /proxy/{proxy+}
+            Method: ANY
+        ProxyOptions:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RemoteFalconProxyApi
+            Path: /proxy/{proxy+}
+            Method: OPTIONS
+
+  # API Gateway
+  RemoteFalconProxyApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub 'RemoteFalconProxy-${Environment}'
+      StageName: !Ref Environment
+      EndpointConfiguration:
+        Type: REGIONAL
+      Cors:
+        AllowMethods: "'GET,POST,OPTIONS,PUT,DELETE'"
+        AllowHeaders: "'Content-Type,Authorization,X-Requested-With,Accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers'"
+        AllowOrigin: "'*'"
+        AllowCredentials: false
+        MaxAge: 600
+
+Outputs:
+  ApiGatewayUrl:
+    Description: URL of the API Gateway
+    Value: !Sub 'https://${RemoteFalconProxyApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}'
+    Export:
+      Name: !Sub '${AWS::StackName}-ApiUrl'
+
+  LambdaFunctionArn:
+    Description: ARN of the Lambda function
+    Value: !GetAtt RemoteFalconProxyFunction.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-LambdaArn'
+
+  AccessTokenParameterName:
+    Description: Name of the SSM parameter storing the access token
+    Value: !Sub '/remotefalcon/${Environment}/access-token'
+    Export:
+      Name: !Sub '${AWS::StackName}-AccessTokenParam'
+
+  SecretKeyParameterName:
+    Description: Name of the SSM parameter storing the secret key
+    Value: !Sub '/remotefalcon/${Environment}/secret-key'
+    Export:
+      Name: !Sub '${AWS::StackName}-SecretKeyParam'

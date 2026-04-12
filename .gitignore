@@ -26,3 +26,6 @@ __pycache__/
 !.github
 !.nvmrc
 !.kiro
+!.config.kiro
+
+.kiro/settings

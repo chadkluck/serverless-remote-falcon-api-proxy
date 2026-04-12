@@ -1,0 +1,59 @@
+{
+  "resource": "/proxy/showDetails",
+  "path": "/proxy/showDetails",
+  "httpMethod": "OPTIONS",
+  "headers": {
+    "Content-Type": "application/json",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Origin": "https://example.com",
+    "Host": "api.example.com",
+    "X-Forwarded-For": "203.0.113.12",
+    "X-Forwarded-Port": "443",
+    "X-Forwarded-Proto": "https",
+    "Access-Control-Request-Method": "GET",
+    "Access-Control-Request-Headers": "Content-Type,Authorization"
+  },
+  "multiValueHeaders": {},
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "pathParameters": null,
+  "stageVariables": null,
+  "requestContext": {
+    "resourceId": "test-resource",
+    "resourcePath": "/proxy/showDetails",
+    "httpMethod": "OPTIONS",
+    "requestId": "test-request-id",
+    "path": "/test/proxy/showDetails",
+    "accountId": "123456789012",
+    "protocol": "HTTP/1.1",
+    "stage": "test",
+    "domainPrefix": "api",
+    "requestTime": "04/Jan/2025:12:00:00 +0000",
+    "requestTimeEpoch": 1767576076261,
+    "identity": {
+      "cognitoIdentityPoolId": null,
+      "accountId": null,
+      "cognitoIdentityId": null,
+      "caller": null,
+      "sourceIp": "203.0.113.12",
+      "principalOrgId": null,
+      "accessKey": null,
+      "cognitoAuthenticationType": null,
+      "cognitoAuthenticationProvider": null,
+      "userArn": null,
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "user": null
+    },
+    "domainName": "api.example.com",
+    "apiId": "test-api-id"
+  },
+  "body": null,
+  "isBase64Encoded": false,
+  "metadata": {
+    "description": "API Gateway OPTIONS event for /proxy/showDetails",
+    "lastUpdated": "2026-01-05T01:21:16.247Z",
+    "eventType": "lambda",
+    "triggerType": "API_GATEWAY",
+    "schemaVersion": "1.0"
+  }
+}
