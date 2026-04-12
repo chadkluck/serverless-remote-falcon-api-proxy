@@ -1,5 +1,5 @@
-const ExampleDao = require("./Example.dao");
+const RemoteFalconDao = require("./RemoteFalcon.dao");
 
 module.exports = {
-	ExampleDao,
+	RemoteFalconDao,
 };

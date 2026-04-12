@@ -10,6 +10,50 @@ This application is **Ready-to-Deploy-and-Run** with the [63Klabs Atlantis Templ
 
 Follow your organization's guidelines for repository and pipeline management.
 
+## Remote Falcon Configuration
+
+Before deploying, set up the required SSM parameters and environment variables.
+
+### SSM Parameters
+
+The application retrieves Remote Falcon API credentials from SSM Parameter Store. These must be created before the first deployment.
+
+The parameter paths follow the Atlantis hierarchy:
+
+```
+${ParameterStoreHierarchy}${DeployEnvironment}/${Prefix}-${ProjectId}-${StageId}/RemoteFalcon/access-token
+${ParameterStoreHierarchy}${DeployEnvironment}/${Prefix}-${ProjectId}-${StageId}/RemoteFalcon/secret-key
+```
+
+Create them using the AWS CLI:
+
+```bash
+# Set the access token (SecureString)
+aws ssm put-parameter \
+  --name "/<YourHierarchy>/<Environment>/<Prefix>-<ProjectId>-<StageId>/RemoteFalcon/access-token" \
+  --type SecureString \
+  --value "YOUR_REMOTE_FALCON_ACCESS_TOKEN"
+
+# Set the secret key (SecureString)
+aws ssm put-parameter \
+  --name "/<YourHierarchy>/<Environment>/<Prefix>-<ProjectId>-<StageId>/RemoteFalcon/secret-key" \
+  --type SecureString \
+  --value "YOUR_REMOTE_FALCON_SECRET_KEY"
+```
+
+> **Note**: Replace the placeholder path segments with your actual Atlantis naming values. The `generate-put-ssm.py` build script will check for these parameters during deployment.
+
+### Environment Variables
+
+These are configured in `template.yml` and `template-configuration.json`:
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `REMOTE_FALCON_API_BASE_URL` | Remote Falcon API endpoint | `https://remotefalcon.com/remote-falcon-external-api` |
+| `ALLOWED_ORIGINS` | Comma-delimited CORS allowed origins | `*` |
+
+`ALLOWED_ORIGINS` is exposed as a CloudFormation parameter (`AllowedOrigins`) so it can be set per-stage in `template-configuration.json` or overridden during pipeline deployment.
+
 ## Why Use Atlantis?
 
 Like any other project, you can skip the Atlantis platform and go at it on your own using `sam deploy` from the CLI within the application-infrastructure directory.

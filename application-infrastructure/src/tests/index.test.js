@@ -1,9 +1,14 @@
+/**
+ * Handler integration and utility tests.
+ *
+ * Keeps existing hash utility tests (they still work).
+ * Adds module structure verification.
+ *
+ * Requirements: 16.1, 16.2
+ */
+
 const { tools } = require("@63klabs/cache-data");
-const path = require('path');
-const { readFileSync } = require('fs');
-const validations = require('../config/validations.js');
 const utils = require('../utils/index.js');
-const { view: exampleView } = require('../views/example.view.js');
 
 console.log(`Testing Against Node version ${tools.nodeVerMajor} (${tools.nodeVer})`);
 if (tools.nodeVerMajor < 22) {
@@ -13,58 +18,6 @@ if (tools.nodeVerMajor < 22) {
 
 console.log(`Node ${tools.AWS.NODE_VER} MAJOR ${tools.AWS.NODE_VER_MAJOR} MINOR ${tools.AWS.NODE_VER_MINOR} PATCH ${tools.AWS.NODE_VER_PATCH} MAJOR MINOR ${tools.AWS.NODE_VER_MAJOR_MINOR} SDK ${tools.AWS.SDK_VER} REGION ${tools.AWS.REGION} V2 ${tools.AWS.SDK_V2} V3 ${tools.AWS.SDK_V3}`, tools.AWS.nodeVersionArray);
 console.log(`tools.AWS.INFO`, tools.AWS.INFO);
-
-/* ****************************************************************************
- * Validations
- */
-
-describe('Test validations from config/validations.js', () => {
-
-	describe('validations.parameters.pathParameters.id', () => {
-		test('should validate a valid game ID', () => {
-			const id = 'G-92d3ace7';
-			expect(validations.parameters.pathParameters.id(id)).toBe(true);
-		});
-
-		test('should reject an invalid game ID', () => {
-			const id = 'invalid_game_id';
-			expect(validations.parameters.pathParameters.id(id)).toBe(false);
-		});
-		
-		test('should reject an invalid game ID based on length (too long)', () => {
-			const id = 'G-ef89b3c08';
-			expect(validations.parameters.pathParameters.id(id)).toBe(false);
-		});
-
-		test('should reject an invalid game ID based on length (too short)', () => {
-			const id = 'G-c0e6';
-			expect(validations.parameters.pathParameters.id(id)).toBe(false);
-		});
-
-	});
-
-	describe('validations.queryStringParameters.players', () => {
-		test('should validate a valid number of players', () => {
-			const players = '5';
-			expect(validations.parameters.queryStringParameters.players(players)).toBe(true);
-		});
-
-		test('should reject a number of players that is too low', () => {
-			const players = '-1';
-			expect(validations.parameters.queryStringParameters.players(players)).toBe(false);
-		});
-
-		test('should reject a number of players that is too high', () => {
-			const players = '11';
-			expect(validations.parameters.queryStringParameters.players(players)).toBe(false);
-		});
-
-		test('should reject a non-numeric value', () => {
-			const players = 'invalid';
-			expect(validations.parameters.queryStringParameters.players(players)).toBe(false);
-		});
-	});
-});
 
 /* ****************************************************************************
  * Utils
@@ -147,36 +100,22 @@ describe('Test utils', () => {
 });
 
 /* ****************************************************************************
- * Views
+ * Module structure verification
  */
 
-describe('Test views/example.view.js', () => {
-	let sampleData;
-	let expectedData;
-
-	beforeAll(() => {
-		const sampleFilePath = path.join(__dirname, '..', 'models', 'sample-data', 'example.dao.sample.json');
-		const sampleFileContent = readFileSync(sampleFilePath, 'utf8');
-		sampleData = JSON.parse(sampleFileContent);
-		
-		const expectedFilePath = path.join(__dirname, '..', 'models', 'test-data', 'example.view.output.json');
-		const expectedFileContent = readFileSync(expectedFilePath, 'utf8');
-		expectedData = JSON.parse(expectedFileContent);
+describe('Module structure', () => {
+	test('utils exports cors, hash, and func', () => {
+		expect(utils).toHaveProperty('cors');
+		expect(utils).toHaveProperty('hash');
+		expect(utils).toHaveProperty('func');
 	});
 
-	describe('view function', () => {
-		test('should transform example data correctly', () => {
-			const result = exampleView(sampleData);
+	test('cors module exports getCorsHeaders function', () => {
+		expect(typeof utils.cors.getCorsHeaders).toBe('function');
+	});
 
-			expect(result).toHaveProperty('items');
-			expect(Array.isArray(result.items)).toBe(true);
-			expect(result).toHaveProperty('count', expectedData.count);
-			expect(result.items).toHaveLength(expectedData.items.length);
-
-			for (let i = 0; i < expectedData.items.length; i++) {
-				expect(result.items[i]).toMatchObject(expectedData.items[i]);
-			}
-		});
-
+	test('hash module exports takeLast and takeFirst functions', () => {
+		expect(typeof utils.hash.takeLast).toBe('function');
+		expect(typeof utils.hash.takeFirst).toBe('function');
 	});
 });

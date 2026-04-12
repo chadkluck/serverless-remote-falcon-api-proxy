@@ -1,6 +1,6 @@
 {
   "Parameters": {
-    "UserAgent": "Web Service - $STAGE_ID$",
+    "UserAgent": "Remote Falcon Proxy - $STAGE_ID$",
     "ApiPathBase": "$PROJECT_ID$-$STAGE_ID$",
     "FunctionMaxMemoryInMB": "2048",
     "FunctionTimeOutInSeconds": "10",
@@ -10,9 +10,9 @@
   },
   "Tags": {
 
-    "Application":"Web Service API",
-    "Name":"Web Service API $PREFIX$-$PROJECT_ID$",
-    "Project": "Web Service API",
+    "Application":"Remote Falcon Proxy API",
+    "Name":"Remote Falcon Proxy API $PREFIX$-$PROJECT_ID$",
+    "Project": "Remote Falcon Proxy",
     "Owner": "teamlead@yourorg.com",
     "Creator":"you@yourorg.com",
     "CostCenter":"7G",

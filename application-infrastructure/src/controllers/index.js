@@ -1,5 +1,7 @@
-const ExampleCtrl = require("./example.controller");
+const ProxyCtrl = require("./proxy.controller");
+const TelemetryCtrl = require("./telemetry.controller");
 
 module.exports = {
-	ExampleCtrl
+	ProxyCtrl,
+	TelemetryCtrl
 };

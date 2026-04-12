@@ -5,5 +5,11 @@ module.exports = {
 		'**/*.js',
 		'!**/node_modules/**',
 		'!**/tests/**'
-	]
+	],
+	transformIgnorePatterns: [
+		'/node_modules/(?!jose)/'
+	],
+	transform: {
+		'^.+\\.js$': ['babel-jest', { plugins: ['@babel/plugin-transform-modules-commonjs'] }]
+	}
 };

@@ -1,31 +1,32 @@
-const { tools: {DebugAndLog} } = require("@63klabs/cache-data");
+const { tools: { DebugAndLog } } = require("@63klabs/cache-data");
 
-/** 
- * Connections can be broken down by the type of data and their cache life.
- * There may be multiple connections for the same host, but with different paths.
- * Typically, each endpoint path will have its own connection, but if they are similar
- * enough, they can share a connection.
- * For example, if they all return data that is cached for 8 hours, then they can
- * share a connection and be separated out in the DAO layer.
-*/
+/**
+ * Connection configurations for external API endpoints.
+ * 
+ * Each connection defines a host, path, and cache profiles.
+ * The DAO layer uses these connections via cache-data's endpoint.send()
+ * for HTTP requests with built-in X-Ray tracing.
+ * 
+ * @module config/connections
+ */
 const connections = [
 	{
-		name: "games",
-		host: "api.chadkluck.net",
-		path: "/games",
+		name: "remote-falcon-api",
+		host: "remotefalcon.com",
+		path: "/remote-falcon-external-api",
 		cache: [
 			{
 				profile: "default",
 				overrideOriginHeaderExpiration: true,
-				defaultExpirationInSeconds: (DebugAndLog.isProduction() ? (24 * 60 * 60) : (5 * 60)),// , // 5 minutes for non-prod
-				expirationIsOnInterval: true,
+				defaultExpirationInSeconds: (DebugAndLog.isProduction() ? (5 * 60) : (1 * 60)), // 5 min prod, 1 min non-prod
+				expirationIsOnInterval: false,
 				headersToRetain: [],
-				hostId: "chadkluck", // log entry label - only used for logging
-				pathId: "games", // log entry label - only used for logging
-				encrypt: true, // encrypt the data in the cache
+				hostId: "remotefalcon",
+				pathId: "external-api",
+				encrypt: true,
 			}
-		]        
+		]
 	}
-]
+];
 
 module.exports = connections;

@@ -61,6 +61,7 @@ Metadata:
         Parameters:
           - ApiPathBase
           - UserAgent
+          - AllowedOrigins
           - LogRetentionInDaysForPROD
           - LogRetentionInDaysForDEVTEST
           - ApiGatewayLoggingEnabled
@@ -237,6 +238,14 @@ Parameters:
   # Most of these parameters are passed to Lambda Environment Variables
   # From: https://www.npmjs.com/package/@63klabs/cache-data
 
+  AllowedOrigins:
+    Type: String
+    Description: "Comma-delimited list of CORS allowed origins"
+    Default: "*"
+
+  # ---------------------------------------------------------------------------
+  # Cache-Data Parameters
+
   CacheDataDynamoDbTableName:
     Type: String
     Description: "The DynamoDb table name to use for caching data. This is used by the 63klabs/cache-data package. If left blank, it will use the imported value from the Cache Data storage stack output."
@@ -376,8 +385,8 @@ Resources:
       StageName: !Ref ApiPathBase
 
       Cors: # Accepted methods are okay from any origin. Our lambda function will handle complex origins for GET and POST requests.
-        AllowMethods: "'GET,OPTIONS'" # Add additional methods such as POST, PUT, DELETE here
-        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowMethods: "'GET,POST,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization,X-Requested-With,Accept,Origin,Access-Control-Request-Method,Access-Control-Request-Headers,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
         AllowOrigin: "'*'"
         MaxAge: "'86400'" # This is just for the max age of CORS
 
@@ -497,6 +506,10 @@ Resources:
           AWS_LAMBDA_LOG_LEVEL: !If [ IsProduction, "INFO", "DEBUG"] # 'DEBUG', 'WARN', 'ERROR', 'INFO' - 'CRITICAL' and 'SILENT' are not currently recognized by Cache Data logging
           AWS_LAMBDA_LOG_FORMAT: 'text'
 
+          # Remote Falcon Settings
+          REMOTE_FALCON_API_BASE_URL: 'https://remotefalcon.com/remote-falcon-external-api'
+          ALLOWED_ORIGINS: !Ref AllowedOrigins
+
           # Cache-Data Settings
           # If you do not provide these environment variables, cache-data will use the default values (shown below)
           # CACHE_DATA_DYNAMO_DB_TABLE and CACHE_DATA_S3_BUCKET are required for cache-data to work
@@ -519,17 +532,47 @@ Resources:
                 'Fn::Sub': '${Prefix}-CacheDataS3Bucket' # relies on the Cache Data storage stack output
 
       Events:
-        GetApiData:
+        TelemetryPost:
           Type: Api
           Properties:
-            Path: /api/example
+            Path: /telemetry
+            Method: post
+            RestApiId: !Ref WebApi
+        TelemetryOptions:
+          Type: Api
+          Properties:
+            Path: /telemetry
+            Method: options
+            RestApiId: !Ref WebApi
+        ProxyShowDetails:
+          Type: Api
+          Properties:
+            Path: /proxy/showDetails
             Method: get
             RestApiId: !Ref WebApi
-        GetById:
+        ProxyAddSequence:
           Type: Api
           Properties:
-            Path: /api/example/{id}
-            Method: get
+            Path: /proxy/addSequenceToQueue
+            Method: post
+            RestApiId: !Ref WebApi
+        ProxyVoteSequence:
+          Type: Api
+          Properties:
+            Path: /proxy/voteForSequence
+            Method: post
+            RestApiId: !Ref WebApi
+        ProxyAny:
+          Type: Api
+          Properties:
+            Path: /proxy/{proxy+}
+            Method: ANY
+            RestApiId: !Ref WebApi
+        ProxyOptions:
+          Type: Api
+          Properties:
+            Path: /proxy/{proxy+}
+            Method: options
             RestApiId: !Ref WebApi
 
   # -- LambdaFunction Execution Role --
@@ -717,7 +760,7 @@ Outputs:
   # -- Endpoint examples
   ApiEndpoint:
     Description: "Endpoint URL"
-    Value: !Sub "https://${WebApi}.execute-api.${AWS::Region}.amazonaws.com/${ApiPathBase}/api/example/" # change to your endpoint
+    Value: !Sub "https://${WebApi}.execute-api.${AWS::Region}.amazonaws.com/${ApiPathBase}/proxy/showDetails"
 
   # -- CloudWatch Log Groups
   CloudWatchLambdaExecutionLogGroup:

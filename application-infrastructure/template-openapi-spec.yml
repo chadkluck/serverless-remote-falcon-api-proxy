@@ -1,51 +1,140 @@
 openapi: '3.0.0'
 info:
-  title: "Web Service API"
-  description: "An API"
-  version: "0.1"
+  title: "Remote Falcon Proxy API"
+  description: "Proxy API for Remote Falcon endpoints and telemetry"
+  version: "1.0"
   contact:
-    name: "Your Name"
-    url: "https://example.com"
-    email: "contact@example.com"
+    name: "63Klabs"
+    url: "https://github.com/63klabs"
   license:
     name: "CC Attribution-ShareAlike 4.0 (CC BY-SA 4.0)"
-    url: "https://example.com"
+    url: "https://creativecommons.org/licenses/by-sa/4.0/"
 
 # =============================================================================
 
-paths: 
+paths:
 
-  /api/example/:
-    get:
-      description: "GET API Example"
-      # parameters:
-      #   - $ref: '#/components/parameters/someParameter'
+  /telemetry:
+    post:
+      description: "Receive and log telemetry events from frontend"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrackingData'
       responses:
-        $ref: '#/components/schemas/DataResponses'
-      x-amazon-apigateway-integration: # This is always the same
+        '200':
+          description: "Tracking data received"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TelemetrySuccess'
+        '400':
+          description: "Validation error"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Server error"
+      x-amazon-apigateway-integration:
+        httpMethod: post
+        type: aws_proxy
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AppFunction.Arn}/invocations
+    options:
+      description: "CORS preflight for telemetry"
+      responses:
+        '200':
+          description: "CORS preflight response"
+      x-amazon-apigateway-integration:
         httpMethod: post
         type: aws_proxy
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AppFunction.Arn}/invocations
 
-  /api/example/{id}:
+  /proxy/showDetails:
     get:
-      description: "GET API Example by ID"
+      description: "Proxy GET request to Remote Falcon showDetails"
+      responses:
+        '200':
+          description: "Show details from Remote Falcon"
+      x-amazon-apigateway-integration:
+        httpMethod: post
+        type: aws_proxy
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AppFunction.Arn}/invocations
+
+  /proxy/addSequenceToQueue:
+    post:
+      description: "Proxy POST request to Remote Falcon addSequenceToQueue"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: "Sequence added"
+      x-amazon-apigateway-integration:
+        httpMethod: post
+        type: aws_proxy
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AppFunction.Arn}/invocations
+
+  /proxy/voteForSequence:
+    post:
+      description: "Proxy POST request to Remote Falcon voteForSequence"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: "Vote recorded"
+      x-amazon-apigateway-integration:
+        httpMethod: post
+        type: aws_proxy
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AppFunction.Arn}/invocations
+
+  /proxy/{proxy+}:
+    x-amazon-apigateway-any-method:
+      description: "Catch-all proxy to Remote Falcon API"
       parameters:
-        - name: id
+        - name: proxy
           in: path
-          description: "Example Resource ID"
-          required: false
+          required: true
           schema:
             type: string
       responses:
-        $ref: '#/components/schemas/DataResponses'
-      x-amazon-apigateway-integration: # This is always the same
+        '200':
+          description: "Proxied response"
+      x-amazon-apigateway-integration:
         httpMethod: post
         type: aws_proxy
         uri:
           Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AppFunction.Arn}/invocations
-
+    options:
+      description: "CORS preflight for proxy paths"
+      parameters:
+        - name: proxy
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "CORS preflight response"
+      x-amazon-apigateway-integration:
+        httpMethod: post
+        type: aws_proxy
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AppFunction.Arn}/invocations
 
 # =============================================================================
 
@@ -53,55 +142,60 @@ components:
 
   # ---------------------------------------------------------------------------
 
-  parameters:
-
-    someParameter:
-      name: someParameter
-      in: query
-      description: "A sample parameter"
-      required: false
-      schema:
-        type: string
-        example: "exampleValue"
-
-  # ---------------------------------------------------------------------------
-
   schemas:
 
-    # Top level
-
-    DataResponses:
-      '200':
-        description: "Response OK"
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ResponseObject'
-      '304':
-        $ref: '#/components/schemas/304'
-      '403':
-        $ref: '#/components/schemas/403'
-
-    # Non 200 Status Codes
-
-    '304':
-      description: "Not Modified"
-      content:
-        text/plain:
-          schema:
-            title: Not Modified
-            type: string
-    '403':
-      description: Not Authorized.
-      content:
-        text/plain:
-          schema:
-            title: Not authorized
-            type: string
-
-    # Fragments
-
-    ResponseObject:
+    TrackingData:
       type: object
-      title: A response object
-      description: "A response object containing data"
+      required:
+        - eventType
+        - url
+      properties:
+        eventType:
+          type: string
+          enum:
+            - pageView
+            - click
+            - videoPlay
+            - songRequest
+            - systemHealth
+            - systemAlert
+            - eventFailure
+          description: "Type of telemetry event"
+        url:
+          type: string
+          format: uri
+          description: "URL where the event occurred"
+        eventData:
+          type: object
+          description: "Additional event-specific data"
+
+    TelemetrySuccess:
+      type: object
+      properties:
+        message:
+          type: string
+          description: "Success message"
+        timestamp:
+          type: string
+          format: date-time
+          description: "Server timestamp"
+        processingTime:
+          type: number
+          description: "Processing time in milliseconds"
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: "Error message"
+        error:
+          type: string
+          description: "Error code"
+        requestId:
+          type: string
+          description: "Lambda request ID"
+        timestamp:
+          type: string
+          format: date-time
+          description: "Server timestamp"

@@ -1,5 +1,7 @@
-const ExampleView = require("./example.view");
+const TelemetryView = require("./telemetry.view");
+const ProxyView = require("./proxy.view");
 
 module.exports = {
-	ExampleView
+	TelemetryView,
+	ProxyView
 };
