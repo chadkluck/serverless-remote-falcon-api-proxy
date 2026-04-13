@@ -8,4 +8,4 @@ This should be a sub-object within the health status object returned that lists 
 
 We do not need to worry about backwards compatibility.
 
-Ask any questions in SPEC-QUESTIONS.md and have them answered there before moving on to the Spec-Driven workflow.
+Ask any questions, and provide any recommendations, in SPEC-QUESTIONS.md and have the user answer them there before moving on to the Spec-Driven workflow.
