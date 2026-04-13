@@ -16,7 +16,7 @@
 
 # USE WITH:
 # - Atlantis pipeline/pipeline-template.yml
-# - Atlantis network/cl
+# - Atlantis network/template-network-route53-cloudfront-s3-apigw.yml
 
 AWSTemplateFormatVersion: "2010-09-09"
 Transform:  AWS::Serverless-2016-10-31
