@@ -3,22 +3,24 @@
 # and limitations under the License.
 #
 # Atlantis for AWS SAM Deployments
-# Starter 02 - API Gateway and Lambda using Cache-Data (NodeJS)
+# Serverless Remote Falcon API Reverse Proxy and Site Telemetry
+# Based on Starter 02 - API Gateway and Lambda using Cache-Data (NodeJS)
 # Author: Chad Kluck - 63klabs.net
-# Version: v2.0.6/2026-03-26
+# Version: v1.0.0/2026-04-12
 
 # Documentation, Issues/Feature Requests, Latest Updates, and Security Reports on GitHub:
-# https://github.com/63Klabs/atlantis-starter-02-apigw-lambda-cache-data-nodejs
+# https://github.com/chadkluck/serverless-remote-falcon-api-proxy
 
 # Creates a web service using API Gateway and Lambda using NodeJS and 63klabs/cache-data
 # This template is designed to be used with 63KLabs Atlantis for automated deployments.
 
 # USE WITH:
 # - Atlantis pipeline/pipeline-template.yml
+# - Atlantis network/cl
 
 AWSTemplateFormatVersion: "2010-09-09"
 Transform:  AWS::Serverless-2016-10-31
-Description: "A web service using API Gateway, Lambda, Cache, NodeJS - atlantis-starter-02-apigw-lambda-cache-data-nodejs"
+Description: "A reverse proxy to access the Remote Falcon API from a custom, self-hosted light show website. Also includes an API for website usage metrics"
 
 # =============================================================================
 # META DATA
