@@ -1,13 +1,15 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: '**/CHANGELOG.md'
+fileMatchPattern: 
+  - '**/CHANGELOG.md'
+  - '**/tasks.md'
 ---
 
 # Changelog Maintenance Guidelines
 
 ## Overview
 
-The changelog (`CHANGELOG.md`) should be kept up to date at the conclusion of a spec-driven development workflow. This document provides guidelines for maintaining consistent, informative changelog entries.
+The changelog (`CHANGELOG.md`) should be kept up to date at the conclusion of a spec-driven development workflow task list. This document provides guidelines for maintaining consistent, informative changelog entries.
 
 ## Core Principles
 
@@ -20,10 +22,10 @@ The changelog (`CHANGELOG.md`) should be kept up to date at the conclusion of a 
 
 ### Unreleased Section
 
-The unreleased section will be marked by the upcoming version number followed by `- unreleased`:
+The unreleased section will be marked by the upcoming version number followed by `(unreleased)`:
 
 ```markdown
-## v0.0.29 - unreleased
+## v0.0.29 (unreleased)
 ```
 
 ### Released Section
@@ -31,12 +33,12 @@ The unreleased section will be marked by the upcoming version number followed by
 Before a release is made, all "Unreleased" entries should be reviewed for accuracy and completeness by the developer. Once entries are properly categorized, the developer will manually change `- unreleased` to the date of the release in `YYYY-MM-DD` format:
 
 ```markdown
-## v0.0.28 - 2026-01-08
+## v0.0.28 (2026-01-08)
 ```
 
 ### New Development Cycle
 
-The developer will create a new entry with the version number in `v0.0.0` format followed by `- unreleased` after a previous release was made, denoting the start of a new development cycle.
+The developer will create a new entry with the version number in `v0.0.0` format followed by `(unreleased)` after a previous release was made, denoting the start of a new development cycle.
 
 ## Available Categories
 
@@ -53,27 +55,51 @@ Entries should be organized under these standard categories:
 
 If no sections are available for a release, make a best effort to categorize, or simply place the entries under the release version without categorization.
 
+
+## Component Version Information
+
+Each CloudFormation template and scripts within an application framework has it's own version information. They are independent of the **overall release version** which is listed as H2 the header of the CHANGELOG.
+
+The entry point for a script (the script that holds the main entry point for execution that is called by a CLI or execution command) should have a version number.
+
+- CloudFormation: Found in the top comments in `# Version: v2.0.6/2026-03-26` format
+- Python: Could be a date `# 2026-01-08`, version and date `# v0.0.1/2026-01-08` or variable `VERSION = "v0.0.1/2026-01-08"`
+- Node: Found in the package.json file in the script directory or closest parent.
+- Shell/Bash Script: Could be a date `# 2026-01-08`, version and date `# v0.0.1/2026-01-08` or variable `VERSION = "v0.0.1/2026-01-08"`
+
+## Component Classification
+
+Each template or script has a primary function based upon if it is used during the build process (called from the buildspec, resides in the build-scripts directory), post deploy process (called in the buildspec-postdeploy, resides in the postdeploy-scripts directory), function (resides in src or src/lambda/functions), layer (src/lambda/layers), etc.
+
 ## Entry Format Guidelines
 
-### CloudFormation Template Changes
+- Each entry should be placed under the appropriate category heading as to whether it is a **Fix**, **Add**, etc.
+- Each entry should list the classification, component name, and version information followed by a brief title, and then bulleted summary.
 
-When CloudFormation templates are modified, the changelog MUST be updated to reflect the changes.
-
-**Format:** `[Category]: [template-name.yml] v[X.Y.Z] - [Brief change description]`
+**Format:** `[Classification]: [Component] v[X.Y.Z] - [Brief change description]`
 
 **Example:**
 ```markdown
 ### Changed
-- **Pipeline: template-pipeline.yml v2.0.18** - Enhanced CodeBuild environment with additional permissions
+- **Build Script: empty-s3.py v2.0.18** - Enhanced cleanup process
 ```
 
-**For multiple templates in a single spec:**
+**For more complex updates additional information may be given:**
 ```markdown
 ### Added
-- **Post-Deployment Validation Feature** [Spec: post-deploy-validation](../.kiro/specs/post-deploy-validation/) *(example)*
-  - Pipeline: template-pipeline.yml v2.1.0 - Added post-deployment stage support
-  - Storage: template-storage-s3-artifacts.yml v1.3.2 - Added validation artifact storage
-  - Service Role: template-service-role-pipeline.yml v1.2.1 - Added permissions for validation tasks
+- **Build Script: empty-s3.py v2.0.18** - Enhanced cleanup process
+  - Added post-deployment stage support
+  - Added validation artifact storage
+  - Added permissions for validation tasks
+```
+
+**Specs should be referenced when available:**
+```markdown
+### Added
+- **Post-Deployment Validation Feature** [Spec: 0-0-4-enhanced-cleanup-process](../.kiro/specs/0-0-4-enhanced-cleanup-process/)
+  - Added post-deployment stage support
+  - Added validation artifact storage
+  - Added permissions for validation tasks
 ```
 
 ### Script and Tool Changes
@@ -147,14 +173,14 @@ When a changelog entry addresses a GitHub issue, include the issue reference wit
 **Example:**
 ```markdown
 ### Fixed
-- **Pipeline: template-pipeline.yml v2.0.19** - Fixed CodeBuild timeout configuration, addresses [#45](https://github.com/63klabs/atlantis-cfn-template-repo-for-serverless-deployments/issues/45)
+- **Template: template.yml v2.0.19** - Fixed CodeBuild timeout configuration, addresses [#45](https://github.com/63klabs/atlantis-cfn-template-repo-for-serverless-deployments/issues/45)
 ```
 
 **Combined spec and issue reference:**
 ```markdown
 ### Added
 - **Post-Deployment Validation** [Spec: post-deploy-validation](../.kiro/specs/post-deploy-validation/) addresses [#78](https://github.com/63klabs/atlantis-cfn-template-repo-for-serverless-deployments/issues/78) *(example)*
-  - Pipeline: template-pipeline.yml v2.1.0 - Added post-deployment stage support
+  - Post Deploy: buildspec-postdeploy.yml - Added post-deployment stage support
 ```
 
 ## Entry Detail Level
@@ -170,15 +196,6 @@ Use bold text for the main feature or change, followed by sub-bullets for detail
   - Integration with pytest for local development testing
   - CI/CD pipeline integration via buildspec.yml
   - Comprehensive error reporting with file paths and violation details
-```
-
-### Template-Specific Entries
-
-For template changes, keep the description brief but informative:
-
-```markdown
-### Changed
-- **Storage: template-storage-s3-artifacts.yml v1.3.5** - Enhanced bucket policy for cross-account access
 ```
 
 ### Dependency Entries
@@ -230,8 +247,9 @@ Before completing a spec, verify the changelog entry:
 
 - [ ] Entry is under the "Unreleased" section
 - [ ] Entry is in the appropriate category
-- [ ] Template names include category prefix (e.g., "pipeline:", "storage:")
-- [ ] Template version numbers are included
+- [ ] Component classification is included
+- [ ] Component name is included
+- [ ] Component version number is included
 - [ ] Spec is referenced with link to `.kiro/specs/` directory
 - [ ] Issue numbers are referenced with GitHub links (if applicable)
 - [ ] Breaking changes are in "Breaking Changes" category with migration guide links
@@ -241,34 +259,13 @@ Before completing a spec, verify the changelog entry:
 
 ## Examples
 
-### Example 1: Single Template Non-Breaking Change
-
-```markdown
-## v0.0.30 - unreleased
-
-### Changed
-- **Pipeline: template-pipeline.yml v2.0.20** - Improved error handling in CodeBuild post-build phase [Spec: pipeline-error-handling](../.kiro/specs/pipeline-error-handling/)
-```
-
-### Example 2: Multi-Template Feature Addition
-
-```markdown
-## v0.0.30 - unreleased
-
-### Added
-- **CloudFront Cache Invalidation** [Spec: cloudfront-invalidation](../.kiro/specs/cloudfront-invalidation/) addresses [#92](https://github.com/63klabs/atlantis-cfn-template-repo-for-serverless-deployments/issues/92)
-  - Network: template-network-route53-cloudfront-s3-apigw.yml v1.5.0 - Added S3 event notifications for cache invalidation
-  - Storage: template-storage-s3-oac-for-cloudfront.yml v1.2.3 - Added Lambda trigger configuration
-  - Service Role: template-service-role-storage.yml v1.1.2 - Added CloudFront invalidation permissions
-```
-
 ### Example 3: Breaking Change with Migration
 
 ```markdown
-## v0.0.30 - unreleased
+## v0.0.30 (unreleased)
 
 ### Breaking Changes
-- **Storage: template-storage-s3-artifacts-v2-0.yml v2.0.0** - Restructured bucket naming convention and removed legacy encryption parameter [Spec: storage-modernization](../.kiro/specs/storage-modernization/)
+- **Lambda: v2.0.0** - Restructured bucket naming convention and removed legacy encryption parameter [Spec: storage-modernization](../.kiro/specs/storage-modernization/)
   - **Migration Guide:** [docs/templates/v2/storage/template-storage-s3-artifacts-v2-0-README.md#migration-from-v1x-to-v20](../docs/templates/v2/storage/template-storage-s3-artifacts-v2-0-README.md#migration-from-v1x-to-v20)
   - **Deprecation:** v1.x deprecated with 24-month support period ending 2028-01-29
 ```
@@ -276,10 +273,10 @@ Before completing a spec, verify the changelog entry:
 ### Example 4: Script and Dependency Changes
 
 ```markdown
-## v0.0.30 - unreleased
+## v0.0.30 (unreleased)
 
 ### Changed
-- **Script: sync_templates.sh** - Added support for multi-region synchronization
+- **Build Script: sync_templates.sh** - Added support for multi-region synchronization
 
 ### Dependencies
 - Updated cfn-lint>=0.85.0 for improved rule coverage
@@ -289,7 +286,7 @@ Before completing a spec, verify the changelog entry:
 ### Example 5: Bug Fix with Issue Reference
 
 ```markdown
-## v0.0.30 - unreleased
+## v0.0.30 (unreleased)
 
 ### Fixed
 - **Pipeline: template-pipeline-github.yml v2.1.5** - Fixed GitHub connection ARN validation, addresses [#103](https://github.com/63klabs/atlantis-cfn-template-repo-for-serverless-deployments/issues/103)
@@ -299,7 +296,7 @@ Before completing a spec, verify the changelog entry:
 ### Example 6: Documentation Update
 
 ```markdown
-## v0.0.30 - unreleased
+## v0.0.30 (unreleased)
 
 ### Changed
 - **Documentation: Template READMEs** - Updated all pipeline template documentation with new parameter examples and troubleshooting sections [Spec: docs-enhancement](../.kiro/specs/docs-enhancement/) *(example)*
@@ -308,7 +305,7 @@ Before completing a spec, verify the changelog entry:
 ## Complete Example Release
 
 ```markdown
-## v0.0.30 - unreleased
+## v0.0.30 (unreleased)
 
 ### Breaking Changes
 - **Storage: template-storage-s3-artifacts-v2-0.yml v2.0.0** - Restructured bucket naming convention and removed legacy encryption parameter [Spec: storage-modernization](../.kiro/specs/storage-modernization/)
@@ -334,7 +331,7 @@ Before completing a spec, verify the changelog entry:
 - Updated cfn-lint>=0.85.0 for improved rule coverage
 - Added requests>=2.31.0 for API integration testing
 
-## v0.0.29 - 2026-01-28
+## v0.0.29 (2026-01-28)
 
 ### Added
 - **Comprehensive Documentation**: Full documentation of the repository structure, templates, and contribution guidelines

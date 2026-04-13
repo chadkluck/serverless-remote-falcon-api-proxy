@@ -11,7 +11,7 @@
  * const result = await TelemetryCtrl.post(props, REQ, RESP);
  */
 
-const { TelemetrySvc } = require("../services");
+const { TelemetrySvc, HealthCheckSvc } = require("../services");
 const { TelemetryView } = require("../views");
 
 /**
@@ -29,8 +29,22 @@ const { TelemetryView } = require("../views");
  * @param {{ipAddress: string, userAgent: string, host: string}} [props.clientInfo] - Client information
  * @param {Object} REQ - Cache-data ClientRequest instance
  * @param {Object} RESP - Cache-data Response instance
- * @returns {Promise<{statusCode: number, body: Object}>} Formatted response object
+ * @returns {Promise<{statusCode: number, body: Object}>} Formatted response object.
+ *   For systemHealth events, the body includes a `remoteFalcon` sub-object with
+ *   connectivity status from HealthCheckSvc. For all other event types, the body
+ *   contains only `message`, `timestamp`, and `processingTime`.
  * @example
+ * // systemHealth event — response includes remoteFalcon status
+ * const result = await post(
+ *   { body: { eventType: 'systemHealth', eventData: { totalRequests: 100 } }, requestId: 'req-123', clientInfo: { ipAddress: '10.0.0.1', userAgent: 'Mozilla/5.0', host: 'example.com' } },
+ *   REQ,
+ *   RESP
+ * );
+ * // result.statusCode === 200
+ * // result.body.remoteFalcon.isConnected === true
+ *
+ * @example
+ * // Non-systemHealth event — no remoteFalcon in response
  * const result = await post(
  *   { body: { eventType: 'pageView', url: 'https://example.com' }, requestId: 'req-123', clientInfo: { ipAddress: '10.0.0.1', userAgent: 'Mozilla/5.0', host: 'example.com' } },
  *   REQ,
@@ -62,11 +76,15 @@ async function post(props, REQ, RESP) {
 	const result = await TelemetrySvc.processTracking(body, clientInfo, requestId);
 
 	if (result.statusCode === 200) {
+		const viewData = { processingTime: result.body.processingTime };
+
+		if (body.eventType === 'systemHealth') {
+			viewData.remoteFalcon = await HealthCheckSvc.checkRemoteFalcon(clientInfo, requestId);
+		}
+
 		return {
 			statusCode: result.statusCode,
-			body: TelemetryView.successView({
-				processingTime: result.body.processingTime
-			})
+			body: TelemetryView.successView(viewData)
 		};
 	}
 

@@ -52,7 +52,6 @@
 │   ├── admin-ops/                 # For Admin, Operations
 │   ├── developer/                 # For Developer maintaining application
 │   └── end-user/                  # For consumer of this application's API
-├── old-backend/                   # Reference implementation (immutable)
 ├── AGENTS.md                      # AI and developer guidelines
 ├── CHANGELOG.md
 ├── DEPLOYMENT.md

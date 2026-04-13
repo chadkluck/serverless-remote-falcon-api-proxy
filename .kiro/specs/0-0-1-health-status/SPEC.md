@@ -1,6 +1,6 @@
 # Health Status
 
-THere is currently a telemetry event for health.
+There is currently a telemetry event for health received as a POST request.
 
 We want to update the response to a health event to also include whether the application was successful in contacting the Remote Falcon service.
 
