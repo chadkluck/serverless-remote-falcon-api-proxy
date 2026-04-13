@@ -22,6 +22,26 @@ A web service that serves as a reverse-proxy for custom, self-hosted light show 
   - Caching of data from remote endpoints using S3 and DynamoDb (provision separately or with application)
   - Request handling: Router, Validation, response formatting and logging
 
+## About
+
+[Remote Falcon](https://remotefalcon.com/) is an external service used by the home light show hobbyist and enthusiast community to provide interactive light show displays.
+
+Light displays consist of synchronized LED lights spread across a house, yard, and decorations, often set to music. These personal displays are created by hobbyists for the enjoyment of their communities, typically around the holidays.
+
+If you have chanced upon a house decked out in lights and props synchronized to music either through a speaker or hyper-local radio station, then you have seen the work of a light show hobbyist.
+
+When visitors have control of the sequence by choosing the next song through a mobile website (often displayed by QR code or web address) then they have most likely interacted with a site hosted and powered by Remote Falcon.
+
+Remote Falcon provides a 100% hosted solution for displaying an interactive website for receiving and playing requests.
+
+Remote Falcon also provides an API for hobbyists of the developer mindset to host their own website front-end technology stack, while Remote Falcon maintains support of the backend request, status, and communication infrastructure for the on-site light controller.
+
+To get started, a hobbyist needs a Remote Falcon account, the Remote Falcon plug-in for their on-site Falcon Controller with configured secret keys, an AWS account to host the serverless-remote-falcon-api-proxy stack, a little SAM know-how, and an API secret and identifier from Remote Falcon.
+
+It is recommended that the hobbyist have a few years experience with light shows, controllers, and Remote Falcon before deploying this solution.
+
+This solution DOES NOT deploy the self-hosted version of the Remote Falcon server. It only provides a reverse-proxy between a Self-Hosted Front-End and the Remote Falcon API service.
+
 ## Architecture
 
 See [Architecture](./ARCHITECTURE.md)
