@@ -24,7 +24,7 @@ A web service that serves as a reverse-proxy for custom, self-hosted light show 
 
 ## About
 
-[Remote Falcon](https://remotefalcon.com/) is an external service used by the home light show hobbyist and enthusiast community to provide interactive light show displays.
+[Remote Falcon](https://remotefalcon.com/) is an external service used by the home light show hobbyist and enthusiast community to provide interactive light show displays. (This application is NOT affiliated with Remote Falcon, it only utilizes its API service.)
 
 Light displays consist of synchronized LED lights spread across a house, yard, and decorations, often set to music. These personal displays are created by hobbyists for the enjoyment of their communities, typically around the holidays.
 
@@ -41,6 +41,10 @@ To get started, a hobbyist needs a Remote Falcon account, the Remote Falcon plug
 It is recommended that the hobbyist have a few years experience with light shows, controllers, and Remote Falcon before deploying this solution.
 
 This solution DOES NOT deploy the self-hosted version of the Remote Falcon server. It only provides a reverse-proxy between a Self-Hosted Front-End and the Remote Falcon API service.
+
+In addition to providing a reverse-proxy to the Remote Falcon service, this solution also provides a telemetry endpoint for the self-hosted website. Telemetry data includes page visit, click, and video play information in addition to the song request information.
+
+JavaScript to integrate into the front-end site is still under development and will be included at a later time.
 
 ## Architecture
 
