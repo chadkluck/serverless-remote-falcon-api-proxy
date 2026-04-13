@@ -278,3 +278,77 @@ describe('Feature: convert-to-atlantis, Property 12: Tracking data size limit en
 		);
 	});
 });
+
+/**
+ * Property test for eventData round-trip fidelity through controller → view.
+ *
+ * Feature: add-client-status-to-system-health, Property 5.1
+ *
+ * **Validates: Requirements 5.1, 5.2**
+ */
+describe('Feature: add-client-status-to-system-health, Property 5.1: eventData pass-through fidelity', () => {
+
+	const { successView } = require('../views/telemetry.view');
+
+	// Generator for optional rateLimitStatus
+	const rateLimitStatusArb = fc.record({
+		isRateLimited: fc.boolean(),
+		requestsInWindow: fc.nat()
+	});
+
+	// Generator for extra arbitrary fields (simulates unknown future fields)
+	const extraFieldsArb = fc.dictionary(
+		fc.string({ minLength: 1, maxLength: 20 }).filter(s => !['totalRequests', 'failedRequests', 'errorRate', 'rateLimitStatus'].includes(s)),
+		fc.oneof(fc.string(), fc.integer(), fc.boolean(), fc.constant(null)),
+		{ minKeys: 0, maxKeys: 5 }
+	);
+
+	// Generator for valid systemHealth eventData
+	const eventDataArb = fc.tuple(
+		fc.nat(),                                    // totalRequests
+		fc.nat(),                                    // failedRequests
+		fc.double({ min: 0, max: 1, noNaN: true }), // errorRate
+		fc.option(rateLimitStatusArb, { nil: undefined }), // optional rateLimitStatus
+		extraFieldsArb                               // extra fields
+	).map(([totalRequests, failedRequests, errorRate, rateLimitStatus, extras]) => {
+		const eventData = { totalRequests, failedRequests, errorRate, ...extras };
+		if (rateLimitStatus !== undefined) {
+			eventData.rateLimitStatus = rateLimitStatus;
+		}
+		return eventData;
+	});
+
+	it('should preserve eventData exactly through controller assembly and view formatting', () => {
+		fc.assert(
+			fc.property(
+				eventDataArb,
+				fc.string({ minLength: 1, maxLength: 40 }),  // ip
+				fc.string({ minLength: 1, maxLength: 80 }),  // userAgent
+				(eventData, ip, userAgent) => {
+					// Simulate controller assembly (same as telemetry.controller.js)
+					const viewData = {
+						processingTime: 1,
+						clientStatus: {
+							ip,
+							userAgent,
+							eventData
+						}
+					};
+
+					// Pass through the view
+					const result = successView(viewData);
+
+					// Assert clientStatus.eventData is identical to input
+					expect(result.clientStatus).toBeDefined();
+					expect(result.clientStatus.eventData).toEqual(eventData);
+
+					// Assert no fields added, removed, or modified
+					const inputKeys = Object.keys(eventData).sort();
+					const outputKeys = Object.keys(result.clientStatus.eventData).sort();
+					expect(outputKeys).toEqual(inputKeys);
+				}
+			),
+			{ numRuns: 100 }
+		);
+	});
+});

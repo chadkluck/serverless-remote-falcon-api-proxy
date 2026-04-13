@@ -1,8 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: 
-  - '**/CHANGELOG.md'
-  - '**/tasks.md'
+fileMatchPattern: '**/CHANGELOG.md'
 ---
 
 # Changelog Maintenance Guidelines

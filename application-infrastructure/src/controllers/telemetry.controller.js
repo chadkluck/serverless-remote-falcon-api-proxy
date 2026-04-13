@@ -31,8 +31,9 @@ const { TelemetryView } = require("../views");
  * @param {Object} RESP - Cache-data Response instance
  * @returns {Promise<{statusCode: number, body: Object}>} Formatted response object.
  *   For systemHealth events, the body includes a `remoteFalcon` sub-object with
- *   connectivity status from HealthCheckSvc. For all other event types, the body
- *   contains only `message`, `timestamp`, and `processingTime`.
+ *   connectivity status from HealthCheckSvc and a `clientStatus` sub-object echoing
+ *   back the client's IP, user agent, and validated eventData. For all other event
+ *   types, the body contains only `message`, `timestamp`, and `processingTime`.
  * @example
  * // systemHealth event — response includes remoteFalcon status
  * const result = await post(
@@ -42,6 +43,9 @@ const { TelemetryView } = require("../views");
  * );
  * // result.statusCode === 200
  * // result.body.remoteFalcon.isConnected === true
+ * // result.body.clientStatus.ip === '10.0.0.1'
+ * // result.body.clientStatus.userAgent === 'Mozilla/5.0'
+ * // result.body.clientStatus.eventData === { totalRequests: 100 }
  *
  * @example
  * // Non-systemHealth event — no remoteFalcon in response
@@ -80,6 +84,11 @@ async function post(props, REQ, RESP) {
 
 		if (body.eventType === 'systemHealth') {
 			viewData.remoteFalcon = await HealthCheckSvc.checkRemoteFalcon(clientInfo, requestId);
+			viewData.clientStatus = {
+				ip: clientInfo.ipAddress,
+				userAgent: clientInfo.userAgent,
+				eventData: body.eventData
+			};
 		}
 
 		return {
