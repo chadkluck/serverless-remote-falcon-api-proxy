@@ -1,4 +1,4 @@
-# Serverless Remote Falcon API Proxy
+# Serverless Remote Falcon API Proxy and Site Telemetry
 
 A web service that serves as a reverse-proxy for custom, self-hosted light show websites to access the Remote Falcon API allowing visitors to see song lists, current status, and make requests. Also includes metric and telemetry data of user interactions with the website. Utilizes API Gateway and an advanced Lambda function written in Node.js that implements various features of the [@63klabs/cache-data](https://www.npmjs.com/package/@63klabs/cache-data) NPM package. All built and deployed upon the [63Klabs Atlantis Template and Scripts Platform](https://github.com/63klabs/atlantis).
 
