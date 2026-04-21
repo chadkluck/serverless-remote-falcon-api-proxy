@@ -37,6 +37,11 @@ function calculateCacheDuration(playingNow, now) {
 		return ACTIVE_PLAYBACK_MAX_AGE;
 	}
 
+	// >! Guard against invalid Date to prevent NaN propagation
+	if (isNaN(now.getTime())) {
+		return MAX_MAX_AGE;
+	}
+
 	const totalSeconds = now.getMinutes() * 60 + now.getSeconds();
 	const secondsIntoInterval = totalSeconds % INTERVAL_SECONDS;
 

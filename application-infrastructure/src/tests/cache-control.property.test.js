@@ -24,7 +24,7 @@ describe('Feature: dynamic-proxy-cache-control, Property 1: Deterministic output
 			fc.constant(null)
 		);
 
-		const dateArb = fc.date({ min: new Date('2020-01-01T00:00:00Z'), max: new Date('2030-12-31T23:59:59Z') });
+		const dateArb = fc.date({ min: new Date('2020-01-01T00:00:00Z'), max: new Date('2030-12-31T23:59:59Z'), noInvalidDate: true });
 
 		fc.assert(
 			fc.property(
@@ -52,7 +52,7 @@ describe('Feature: dynamic-proxy-cache-control, Property 2: Active playback cons
 	 */
 	it('should return exactly 5 for all non-empty playingNow strings', () => {
 		const nonEmptyStringArb = fc.string({ minLength: 1 });
-		const dateArb = fc.date({ min: new Date('2020-01-01T00:00:00Z'), max: new Date('2030-12-31T23:59:59Z') });
+		const dateArb = fc.date({ min: new Date('2020-01-01T00:00:00Z'), max: new Date('2030-12-31T23:59:59Z'), noInvalidDate: true });
 
 		fc.assert(
 			fc.property(
@@ -78,7 +78,7 @@ describe('Feature: dynamic-proxy-cache-control, Property 3: Monotonic decrease w
 	 */
 	it('should return monotonically decreasing max-age within the same 5-minute interval', () => {
 		const intervalArb = fc.tuple(
-			fc.date({ min: new Date('2020-01-01T00:00:00Z'), max: new Date('2030-12-31T23:59:59Z') }),
+			fc.date({ min: new Date('2020-01-01T00:00:00Z'), max: new Date('2030-12-31T23:59:59Z'), noInvalidDate: true }),
 			fc.integer({ min: 0, max: 299 }),
 			fc.integer({ min: 0, max: 299 })
 		);
