@@ -16,6 +16,11 @@ It is the responsibility of the developer/maintainer of any repository that was 
 - Practice safe coding and scripting
 - Utilize industry best practices and standards for security
 
+If using Kiro, there are 2 hooks provided to assist in keeping NPM packages and Lambda Layers current:
+- `.kiro/hooks/`
+  - `audit-update-npm-packages`
+  - `update-lambda-layers`
+  
 ## Reporting a Vulnerability
 
 This repository was created using [Atlantis Starter #02](https://github.com/63klabs/atlantis-starter-02-apigw-lambda-cache-data-nodejs/) as a template.

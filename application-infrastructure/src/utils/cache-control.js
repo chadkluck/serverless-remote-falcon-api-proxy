@@ -2,7 +2,7 @@
  * @module utils/cache-control
  *
  * Pure utility functions for calculating and formatting Cache-Control
- * header values based on Remote Falcon playback state.
+ * and Expires header values based on Remote Falcon playback state.
  */
 
 const ACTIVE_PLAYBACK_MAX_AGE = 5;
@@ -79,8 +79,78 @@ function parseCacheControlHeader(headerValue) {
 	return parseInt(headerValue.replace('max-age=', ''), 10);
 }
 
+/**
+ * Calculate the absolute expiration Date based on playback state.
+ *
+ * When a sequence is actively playing, returns now + 5 seconds.
+ * When nothing is playing, returns the next 5-minute clock-aligned
+ * interval boundary (e.g., if now is 08:01:30, returns 08:05:00).
+ * When exactly on a boundary, returns now + 300 seconds (the next boundary).
+ *
+ * @param {string|null} playingNow - The playingNow field from the Remote Falcon response
+ * @param {Date} now - The current time
+ * @returns {Date} The absolute expiration timestamp
+ * @example
+ * // Active playback at 08:01:30 → expires at 08:01:35
+ * calculateExpirationDate("Jingle Bells", new Date("2025-01-01T08:01:30Z"));
+ *
+ * @example
+ * // Nothing playing at 08:01:30 → expires at 08:05:00
+ * calculateExpirationDate("", new Date("2025-01-01T08:01:30Z"));
+ *
+ * @example
+ * // Exactly on boundary at 08:05:00 → expires at 08:10:00
+ * calculateExpirationDate(null, new Date("2025-01-01T08:05:00.000Z"));
+ */
+function calculateExpirationDate(playingNow, now) {
+	if (typeof playingNow === 'string' && playingNow.length > 0) {
+		return new Date(now.getTime() + ACTIVE_PLAYBACK_MAX_AGE * 1000);
+	}
+
+	// >! Guard against invalid Date to prevent NaN propagation
+	if (isNaN(now.getTime())) {
+		return new Date(Date.now() + INTERVAL_SECONDS * 1000);
+	}
+
+	const duration = calculateCacheDuration(playingNow, now);
+	return new Date(now.getTime() + duration * 1000);
+}
+
+/**
+ * Format a Date as an HTTP-date string per RFC 7234.
+ *
+ * Produces the format: `<day-name>, <DD> <Mon> <YYYY> <HH>:<MM>:<SS> GMT`
+ *
+ * @param {Date} date - The date to format
+ * @returns {string} e.g. "Wed, 01 Jan 2025 08:05:00 GMT"
+ * @example
+ * formatExpiresHeader(new Date("2025-01-01T08:05:00Z"));
+ * // "Wed, 01 Jan 2025 08:05:00 GMT"
+ */
+function formatExpiresHeader(date) {
+	return date.toUTCString();
+}
+
+/**
+ * Parse an HTTP-date string to extract a Date object.
+ *
+ * Accepts the RFC 7234 HTTP-date format produced by {@link formatExpiresHeader}.
+ *
+ * @param {string} headerValue - e.g. "Wed, 01 Jan 2025 08:05:00 GMT"
+ * @returns {Date} The parsed Date
+ * @example
+ * parseExpiresHeader("Wed, 01 Jan 2025 08:05:00 GMT");
+ * // Date object for 2025-01-01T08:05:00.000Z
+ */
+function parseExpiresHeader(headerValue) {
+	return new Date(headerValue);
+}
+
 module.exports = {
 	calculateCacheDuration,
 	formatCacheControlHeader,
-	parseCacheControlHeader
+	parseCacheControlHeader,
+	calculateExpirationDate,
+	formatExpiresHeader,
+	parseExpiresHeader
 };

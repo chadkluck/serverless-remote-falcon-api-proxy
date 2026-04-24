@@ -13,7 +13,7 @@
 const { ProxySvc } = require("../services");
 const { ProxyView } = require("../views");
 const { cacheControl } = require("../utils");
-const { calculateCacheDuration, formatCacheControlHeader } = cacheControl;
+const { calculateCacheDuration, formatCacheControlHeader, calculateExpirationDate, formatExpiresHeader } = cacheControl;
 
 /**
  * Forward a proxy request to the Remote Falcon API.
@@ -66,12 +66,15 @@ async function forward(props, REQ, RESP) {
 		);
 
 		if (result.statusCode >= 200 && result.statusCode < 300) {
-			const maxAge = calculateCacheDuration(result.body?.playingNow, new Date());
+			const now = new Date();
+			const maxAge = calculateCacheDuration(result.body?.playingNow, now);
+			const expirationDate = calculateExpirationDate(result.body?.playingNow, now);
 			return {
 				statusCode: result.statusCode,
 				body: ProxyView.forwardView(result),
 				headers: {
-					"Cache-Control": formatCacheControlHeader(maxAge)
+					"Cache-Control": formatCacheControlHeader(maxAge),
+					"Expires": formatExpiresHeader(expirationDate)
 				}
 			};
 		}

@@ -7,7 +7,7 @@
  * Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 3.4, 4.1, 4.2
  */
 
-const { calculateCacheDuration, formatCacheControlHeader, parseCacheControlHeader } = require('../utils/cache-control');
+const { calculateCacheDuration, formatCacheControlHeader, parseCacheControlHeader, calculateExpirationDate, formatExpiresHeader, parseExpiresHeader } = require('../utils/cache-control');
 
 describe('cache-control utility', () => {
 
@@ -104,6 +104,65 @@ describe('cache-control utility', () => {
 
 		it('should extract 300 from "max-age=300"', () => {
 			expect(parseCacheControlHeader('max-age=300')).toBe(300);
+		});
+	});
+
+	/* ------------------------------------------------------------------ */
+	/*  calculateExpirationDate                                            */
+	/* ------------------------------------------------------------------ */
+	describe('calculateExpirationDate', () => {
+
+		describe('when playingNow is a non-empty string', () => {
+			it('should return now + 5 seconds', () => {
+				const now = new Date('2025-01-01T08:01:30Z');
+				const result = calculateExpirationDate('Jingle Bells', now);
+				expect(result.getTime()).toBe(now.getTime() + 5000);
+			});
+		});
+
+		describe('when playingNow is empty string', () => {
+			it('should return 08:05:00 at 08:01:30', () => {
+				const result = calculateExpirationDate('', new Date('2025-01-01T08:01:30Z'));
+				expect(result.getTime()).toBe(new Date('2025-01-01T08:05:00Z').getTime());
+			});
+
+			it('should return 08:10:00 at 08:05:00 (on boundary)', () => {
+				const result = calculateExpirationDate('', new Date('2025-01-01T08:05:00.000Z'));
+				expect(result.getTime()).toBe(new Date('2025-01-01T08:10:00Z').getTime());
+			});
+		});
+
+		describe('when playingNow is null', () => {
+			it('should return 08:05:00 at 08:04:59', () => {
+				const result = calculateExpirationDate(null, new Date('2025-01-01T08:04:59Z'));
+				expect(result.getTime()).toBe(new Date('2025-01-01T08:05:00Z').getTime());
+			});
+
+			it('should return 08:05:00 at 08:02:00', () => {
+				const result = calculateExpirationDate(null, new Date('2025-01-01T08:02:00Z'));
+				expect(result.getTime()).toBe(new Date('2025-01-01T08:05:00Z').getTime());
+			});
+		});
+	});
+
+	/* ------------------------------------------------------------------ */
+	/*  formatExpiresHeader                                                */
+	/* ------------------------------------------------------------------ */
+	describe('formatExpiresHeader', () => {
+		it('should produce correct HTTP-date string', () => {
+			const date = new Date('2025-01-01T08:05:00Z');
+			const result = formatExpiresHeader(date);
+			expect(result).toBe('Wed, 01 Jan 2025 08:05:00 GMT');
+		});
+	});
+
+	/* ------------------------------------------------------------------ */
+	/*  parseExpiresHeader                                                 */
+	/* ------------------------------------------------------------------ */
+	describe('parseExpiresHeader', () => {
+		it('should extract correct Date from HTTP-date string', () => {
+			const result = parseExpiresHeader('Wed, 01 Jan 2025 08:05:00 GMT');
+			expect(result.getTime()).toBe(new Date('2025-01-01T08:05:00Z').getTime());
 		});
 	});
 });

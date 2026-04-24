@@ -1,2 +1,3 @@
 - On interval
 - Test PROD resources
+- Add country restrictions (view only, no requests)

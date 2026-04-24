@@ -8,7 +8,14 @@
 
 const { describe, it, expect } = require('@jest/globals');
 const fc = require('fast-check');
-const { calculateCacheDuration, formatCacheControlHeader, parseCacheControlHeader } = require('../utils/cache-control');
+const {
+	calculateCacheDuration,
+	formatCacheControlHeader,
+	parseCacheControlHeader,
+	calculateExpirationDate,
+	formatExpiresHeader,
+	parseExpiresHeader
+} = require('../utils/cache-control');
 
 describe('Feature: dynamic-proxy-cache-control, Property 1: Deterministic output and range bounds', () => {
 
@@ -126,6 +133,128 @@ describe('Feature: dynamic-proxy-cache-control, Property 4: Round-trip consisten
 					const formatted = formatCacheControlHeader(n);
 					const parsed = parseCacheControlHeader(formatted);
 					expect(parsed).toBe(n);
+				}
+			),
+			{ numRuns: 100 }
+		);
+	});
+});
+
+describe('Feature: 0-0-1-dynamic-proxy-cache-control, Property 5: Non-playing expiration boundary alignment', () => {
+
+	/**
+	 * **Validates: Requirements 5.1, 5.2, 5.4, 6.4**
+	 *
+	 * For any Date and empty/null playingNow, calculateExpirationDate returns a Date
+	 * with minutes % 5 === 0, seconds === 0, strictly after now, and at most 300 seconds after now.
+	 */
+	it('should return a boundary-aligned Date strictly after now and within 300s for empty/null playingNow', () => {
+		const playingNowArb = fc.oneof(
+			fc.constant(''),
+			fc.constant(null)
+		);
+
+		const dateArb = fc.date({ min: new Date('2020-01-01T00:00:00Z'), max: new Date('2030-12-31T23:59:59Z'), noInvalidDate: true });
+
+		fc.assert(
+			fc.property(
+				playingNowArb,
+				dateArb,
+				(playingNow, now) => {
+					const result = calculateExpirationDate(playingNow, now);
+
+					expect(result.getUTCMinutes() % 5).toBe(0);
+					expect(result.getUTCSeconds()).toBe(0);
+					expect(result.getTime()).toBeGreaterThan(now.getTime());
+					expect(result.getTime() - now.getTime()).toBeLessThanOrEqual(300 * 1000);
+				}
+			),
+			{ numRuns: 100 }
+		);
+	});
+});
+
+describe('Feature: 0-0-1-dynamic-proxy-cache-control, Property 6: Expiration always in the future', () => {
+
+	/**
+	 * **Validates: Requirements 5.4, 6.5**
+	 *
+	 * For any valid playingNow (non-empty string, empty string, or null) and any Date,
+	 * calculateExpirationDate returns a Date strictly after now.
+	 */
+	it('should return a Date strictly after now for all valid playingNow values', () => {
+		const playingNowArb = fc.oneof(
+			fc.string({ minLength: 1 }),
+			fc.constant(''),
+			fc.constant(null)
+		);
+
+		const dateArb = fc.date({ min: new Date('2020-01-01T00:00:00Z'), max: new Date('2030-12-31T23:59:59Z'), noInvalidDate: true });
+
+		fc.assert(
+			fc.property(
+				playingNowArb,
+				dateArb,
+				(playingNow, now) => {
+					const result = calculateExpirationDate(playingNow, now);
+					expect(result.getTime()).toBeGreaterThan(now.getTime());
+				}
+			),
+			{ numRuns: 100 }
+		);
+	});
+});
+
+describe('Feature: 0-0-1-dynamic-proxy-cache-control, Property 7: Expires header round-trip', () => {
+
+	/**
+	 * **Validates: Requirements 7.1, 7.2, 7.3**
+	 *
+	 * For any valid Date, formatting then parsing produces a Date whose time value
+	 * equals the original Date's time value truncated to whole seconds.
+	 */
+	it('should round-trip format and parse with milliseconds truncated', () => {
+		const dateArb = fc.date({ min: new Date('2020-01-01T00:00:00Z'), max: new Date('2030-12-31T23:59:59Z'), noInvalidDate: true });
+
+		fc.assert(
+			fc.property(
+				dateArb,
+				(date) => {
+					const parsed = parseExpiresHeader(formatExpiresHeader(date));
+					const expectedMs = Math.floor(date.getTime() / 1000) * 1000;
+					expect(parsed.getTime()).toBe(expectedMs);
+				}
+			),
+			{ numRuns: 100 }
+		);
+	});
+});
+
+describe('Feature: 0-0-1-dynamic-proxy-cache-control, Property 8: Cache-Control and Expires consistency', () => {
+
+	/**
+	 * **Validates: Requirements 8.1, 8.2**
+	 *
+	 * For any valid playingNow and any Date, calculateExpirationDate(pn, now).getTime()
+	 * equals now.getTime() + calculateCacheDuration(pn, now) * 1000.
+	 */
+	it('should have consistent expiration between Cache-Control and Expires', () => {
+		const playingNowArb = fc.oneof(
+			fc.string({ minLength: 1 }),
+			fc.constant(''),
+			fc.constant(null)
+		);
+
+		const dateArb = fc.date({ min: new Date('2020-01-01T00:00:00Z'), max: new Date('2030-12-31T23:59:59Z'), noInvalidDate: true });
+
+		fc.assert(
+			fc.property(
+				playingNowArb,
+				dateArb,
+				(playingNow, now) => {
+					const expirationDate = calculateExpirationDate(playingNow, now);
+					const cacheDuration = calculateCacheDuration(playingNow, now);
+					expect(expirationDate.getTime()).toBe(now.getTime() + cacheDuration * 1000);
 				}
 			),
 			{ numRuns: 100 }
